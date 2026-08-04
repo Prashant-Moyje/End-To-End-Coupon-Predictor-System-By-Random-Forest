@@ -72,10 +72,9 @@ cd coupon-predictor-system
 pip install -r requirements.txt
 ```
 
-### 3. Add the dataset
-Place `DS_DATA.csv` inside a `data/` folder at the project root
-(not included in this repo — see the UCI Machine Learning Repository for the source
-dataset).
+### 3. Dataset
+
+The required dataset (`DS_DATA.csv`) is already included in this repository under the `data/` directory:
 
 ### 4. Train the model
 ```bash

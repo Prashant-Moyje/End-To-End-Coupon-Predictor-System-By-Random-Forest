@@ -1,0 +1,17 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Environments
+venv/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large raw data (optional — remove this line if you want to commit the CSV)
+# data/DS_DATA.csv

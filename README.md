@@ -16,7 +16,7 @@ The repo covers the whole path: cleaning, a scikit-learn preprocessing pipeline,
 ## Screenshot
 
 <!-- Replace with a real screenshot: save to docs/screenshot.png -->
-![Streamlit prediction form showing coupon context inputs and the predicted acceptance result](docs/screenshot.png)
+![Streamlit prediction form showing coupon context inputs and the predicted result](screenshot.png)
 
 ---
 

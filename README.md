@@ -1,132 +1,148 @@
-# 🎟️ Coupon Recommendation System
+# Coupon Recommendation System
 
-An end-to-end machine learning project that predicts whether a driver will accept an
-in-vehicle coupon, based on contextual factors like weather, destination, coupon type,
-and rider demographics. Includes data cleaning, model training, hyperparameter tuning,
-and a deployed interactive web app.
+**Predicts whether a driver will redeem an in-vehicle coupon — from the weather, the destination, and who's in the car.**
 
-**🚀 Live Demo:** [coupon-predictor-system-gesj37kjnkpedfkke4f94j.streamlit.app](https://coupon-predictor-system-gesj37kjnkpedfkke4f94j.streamlit.app/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
+[![Live Demo](https://img.shields.io/badge/demo-streamlit-ff4b4b)](https://coupon-predictor-system-gesj37kjnkpedfkke4f94j.streamlit.app/)
 
----
+An end-to-end machine learning project on the UCI *In-Vehicle Coupon Recommendation* dataset: a driver is offered a coupon mid-trip, and the model predicts whether they'll take it. Context matters more than you'd expect — the same coffee coupon lands differently at 7am on a sunny commute than at 10pm in the rain with a passenger in the car.
 
-## Project Overview
+The repo covers the whole path: cleaning, a scikit-learn preprocessing pipeline, a `RandomForestClassifier` tuned with `GridSearchCV`, and a Streamlit form that returns a live prediction with a confidence score. Final test accuracy is **75.44%**.
 
-| Stage | Description |
-|---|---|
-| **Data** | UCI "In-Vehicle Coupon Recommendation" dataset |
-| **Preprocessing** | Missing-value imputation, one-hot encoding, feature scaling |
-| **Model** | `RandomForestClassifier`, tuned via `GridSearchCV` (5-fold CV) |
-| **Result** | 75.44% test accuracy |
-| **App** | Interactive prediction form built with Streamlit |
-| **Deployment** | Hosted live on Streamlit Community Cloud |
+**[▶ Try the live demo](https://coupon-predictor-system-gesj37kjnkpedfkke4f94j.streamlit.app/)** — no install required.
 
 ---
 
-## Repository Structure
+## Screenshot
 
+<!-- Replace with a real screenshot: save to docs/screenshot.png -->
+![Streamlit prediction form showing coupon context inputs and the predicted acceptance result](docs/screenshot.png)
+
+---
+
+## Features
+
+- **Single-pipeline design** — preprocessing and model live in one `sklearn.Pipeline`, so the app can't drift out of sync with training. Serialized whole with `joblib`.
+- **Handles messy real-world columns** — drops the near-empty `car` field and mode-fills the behavioral frequency columns (`Bar`, `CoffeeHouse`, `CarryAway`, `RestaurantLessThan20`, `Restaurant20To50`).
+- **Tuned, not guessed** — `GridSearchCV` over `n_estimators`, `max_depth`, and `min_samples_split` with 5-fold cross-validation.
+- **Reproducible training** — `src/train.py` runs the full cleaning → tuning → evaluation → save cycle in one command.
+- **Interactive app** — Streamlit form collects the driving scenario and returns a prediction with a confidence score.
+- **Notebook included** — `notebooks/` has the exploratory analysis and full grid-search output.
+
+---
+
+## Quick start
+
+Requires **Python 3.9 or newer**.
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/Prashant-Moyje/End-To-End-Coupon-Predictor-System-By-Random-Forest.git
+cd End-To-End-Coupon-Predictor-System-By-Random-Forest
+
+python3 -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
 ```
-coupon-predictor-system/
+
+### 2. Launch the app
+
+```bash
+streamlit run app.py
+```
+
+Open the URL Streamlit prints, usually `http://localhost:8501`. Fill in the scenario — weather, time, destination, coupon type, expiry, passenger — and submit to get a prediction.
+
+The trained pipeline (`coupon_model.pkl`) is committed to the repo, so this works straight from a fresh clone. No training required to see it run.
+
+### 3. Retrain (optional)
+
+```bash
+python src/train.py
+```
+
+Cleans `data/DS_DATA.csv`, runs the grid search, prints the evaluation, and overwrites `coupon_model.pkl`. The grid search is the slow part — expect a few minutes on a laptop.
+
+If the dataset is missing, download the [In-Vehicle Coupon Recommendation dataset](https://archive.ics.uci.edu/dataset/603/in+vehicle+coupon+recommendation) from UCI and save it to `data/DS_DATA.csv`.
+
+---
+
+## How it works
+
+| Stage | What happens |
+|---|---|
+| **Clean** | Drop the sparsely-populated `car` column; mode-fill missing behavioral frequencies |
+| **Preprocess** | `StandardScaler` on numeric features, `OneHotEncoder` on categorical, joined by `ColumnTransformer` |
+| **Train** | `RandomForestClassifier` inside a `Pipeline`, tuned with `GridSearchCV` (5-fold CV) |
+| **Evaluate** | Held-out 20% test split |
+| **Ship** | Pipeline serialized with `joblib`, loaded by the Streamlit app |
+
+### Results
+
+| Metric | Score |
+|---|---|
+| Best cross-validation accuracy | 75.72% |
+| Final test set accuracy | 75.44% |
+
+Full classification report and the winning hyperparameters are in `notebooks/Coupon_Recommendation_System.ipynb`.
+
+---
+
+## Tech stack
+
+| Layer | Tools |
+|---|---|
+| Language | Python 3.9+ |
+| Data | pandas, NumPy |
+| Modeling | scikit-learn (`Pipeline`, `ColumnTransformer`, `RandomForestClassifier`, `GridSearchCV`) |
+| Serialization | joblib |
+| App | Streamlit |
+| Deployment | Streamlit Community Cloud |
+
+---
+
+## Repository structure
+
+```text
+End-To-End-Coupon-Predictor-System-By-Random-Forest/
 ├── data/
-│   └── DS_DATA.csv            # raw dataset (add locally — not committed, see .gitignore)
+│   └── DS_DATA.csv                          # UCI dataset
 ├── notebooks/
-│   └── Coupon_Recommendation_System.ipynb   # exploratory analysis + model development
+│   └── Coupon_Recommendation_System.ipynb   # EDA + model development
 ├── src/
-│   └── train.py                # standalone script: trains and saves the model
-├── app.py                      # Streamlit web app (loads coupon_model.pkl)
-├── coupon_model.pkl            # trained model pipeline (generated by train.py)
-├── requirements.txt            # Python dependencies
-├── .gitignore
+│   └── train.py                             # trains and saves the pipeline
+├── app.py                                   # Streamlit app
+├── coupon_model.pkl                         # generated by train.py
+├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## How It Works
+## Deploy your own copy
 
-1. **Data cleaning** — drops the sparsely-populated `car` column, fills missing values
-   in behavioral frequency columns (`Bar`, `CoffeeHouse`, `CarryAway`,
-   `RestaurantLessThan20`, `Restaurant20To50`) with the column mode.
-2. **Preprocessing pipeline** — numeric features are standardized (`StandardScaler`),
-   categorical features are one-hot encoded (`OneHotEncoder`), combined via
-   `ColumnTransformer`.
-3. **Model training** — `RandomForestClassifier` wrapped in a single `sklearn.Pipeline`
-   with the preprocessor, tuned over `n_estimators`, `max_depth`, and
-   `min_samples_split` using `GridSearchCV` with 5-fold cross-validation.
-4. **Evaluation** — final model evaluated on a held-out 20% test split.
-5. **Deployment** — the trained pipeline is serialized with `joblib` and loaded inside
-   a Streamlit app (`app.py`), which collects user input through a form and returns a
-   real-time prediction with confidence score. Deployed on Streamlit Community Cloud.
+1. Push the repo to your GitHub account, with `coupon_model.pkl` committed (run `src/train.py` first if it isn't there).
+2. Sign in at [share.streamlit.io](https://share.streamlit.io) with GitHub.
+3. **Create app** → **Deploy a public app from GitHub**.
+4. Pick the repo, the `main` branch, and `app.py` as the entry point.
+5. **Deploy.** Streamlit installs `requirements.txt` and gives you a public URL in a couple of minutes.
 
 ---
 
-## Running Locally
+## Roadmap
 
-### 1. Clone the repo
-```bash
-git clone https://github.com/Learnprashant70/coupon-predictor-system.git
-cd coupon-predictor-system
-```
-
-### 2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Dataset
-
-The required dataset (`DS_DATA.csv`) is already included in this repository under the `data/` directory:
-
-### 4. Train the model
-```bash
-python src/train.py
-```
-This cleans the data, runs the grid search, evaluates the model, and saves
-`coupon_model.pkl` to the project root.
-
-### 5. Run the app locally
-```bash
-streamlit run app.py
-```
-Then open the local URL Streamlit prints (typically `http://localhost:8501`).
+- Benchmark against gradient-boosted models (XGBoost, LightGBM)
+- Ordinal encoding for the naturally-ordered frequency columns instead of one-hot
+- Wider search space via `RandomizedSearchCV`
+- Handle class imbalance with `class_weight='balanced'`
+- Feature importance analysis to prune low-signal columns
+- Report precision/recall and AUC alongside accuracy, and compare to a majority-class baseline
 
 ---
 
-## Deploying Your Own Copy
+## License
 
-This app is deployed on **Streamlit Community Cloud**:
-
-1. Push this repo to your own GitHub account (make sure `coupon_model.pkl` is included
-   — run `src/train.py` first if it isn't).
-2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
-3. Click **Create app** → **Deploy a public app from GitHub**.
-4. Select your repo, branch (`main`), and main file path (`app.py`).
-5. Click **Deploy** — Streamlit installs `requirements.txt` and launches the app
-   automatically. You'll get a public URL within a couple of minutes.
-
----
-
-## Results
-
-```
-Best Hyperparameters: (see notebooks/Coupon_Recommendation_System.ipynb for full grid search output)
-Best CV Accuracy: 75.72%
-Final Test Set Accuracy: 75.44%
-```
-
-Classification report and further evaluation details are available in the notebook.
-
----
-
-## Tech Stack
-
-`Python` · `pandas` · `scikit-learn` · `Streamlit` · `joblib` · `Git/GitHub`
-
----
-
-## Future Improvements
-
-- Compare against gradient-boosted models (XGBoost/LightGBM)
-- Ordinal encoding for naturally-ordered frequency columns instead of one-hot
-- Wider hyperparameter search via `RandomizedSearchCV`
-- Address class imbalance with `class_weight='balanced'`
-- Feature importance analysis to drop low-signal features
+<!-- Add a LICENSE file and update this line. -->
+MIT
